@@ -100,12 +100,27 @@ export default async function DashboardPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                             {videos?.map((video) => (
                                 <Card key={video.id} className="flex flex-col hover:shadow-md transition-shadow">
-                                    <CardHeader>
+                                    <CardHeader className="p-0">
+                                        {video.thumbnail_url ? (
+                                            <div className="aspect-video w-full overflow-hidden rounded-t-lg relative group">
+                                                <img
+                                                    src={video.thumbnail_url}
+                                                    alt={video.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="aspect-video w-full bg-gray-200 rounded-t-lg flex items-center justify-center">
+                                                <span className="text-gray-400 text-xs">No Image</span>
+                                            </div>
+                                        )}
+                                    </CardHeader>
+                                    <div className="p-6 pb-2">
                                         <CardTitle className="line-clamp-2 text-lg leading-snug">{video.title}</CardTitle>
                                         <div className="text-xs text-gray-500 mt-2">
                                             {new Date(video.published_at).toLocaleDateString('ja-JP')}
                                         </div>
-                                    </CardHeader>
+                                    </div>
                                     <CardContent className="flex-1">
                                         <div className="space-y-4 text-sm">
                                             <div>

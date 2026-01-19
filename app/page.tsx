@@ -48,9 +48,10 @@ export default async function Home() {
   // データがない場合はサンプルを表示
   const displayVideos = (videos && videos.length > 0) ? videos : SAMPLE_VIDEOS as Video[];
 
-  const getThumbnailUrl = (videoId: string) => {
-    if (videoId === 'sample') return 'https://images.unsplash.com/photo-1582053433976-25c00369fc93?auto=format&fit=crop&q=80&w=800'; // ダミー画像
-    return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+  const getThumbnailUrl = (video: Video) => {
+    if (video.thumbnail_url) return video.thumbnail_url;
+    if (video.yt_video_id === 'sample') return 'https://images.unsplash.com/photo-1582053433976-25c00369fc93?auto=format&fit=crop&q=80&w=800'; // ダミー画像
+    return `https://i.ytimg.com/vi/${video.yt_video_id}/maxresdefault.jpg`;
   };
 
   return (
@@ -99,7 +100,7 @@ export default async function Home() {
                 </Button>
               </Link>
             </div>
-            <p className="text-sm text-gray-500 font-medium">登録にクレジットカードは不要。いつでもキャンセル可能です。</p>
+            <p className="text-sm text-gray-500 font-medium">まずは7日間無料でお試し。期間中のキャンセルなら料金は一切かかりません。</p>
           </div>
         </section>
 
@@ -117,7 +118,7 @@ export default async function Home() {
                   {/* Thumbnail Area */}
                   <div className="relative aspect-video overflow-hidden bg-gray-900 cursor-pointer">
                     <img
-                      src={getThumbnailUrl(video.yt_video_id!)}
+                      src={getThumbnailUrl(video)}
                       alt={video.title}
                       className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-transform duration-500"
                     />
@@ -235,7 +236,7 @@ export default async function Home() {
               </Button>
             </Link>
             <p className="mt-6 text-sm text-blue-200 opacity-80">
-              No credit card required for browsing. Cancel anytime.
+              まずは7日間の無料トライアルから。いつでもキャンセル可能です。
             </p>
           </div>
         </section>

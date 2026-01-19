@@ -26,6 +26,8 @@
     "stripe": "^20.2.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "youtube-caption-scraper": "^1.0.0",
+    "youtube-dl-exec": "^3.0.29",
     "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {

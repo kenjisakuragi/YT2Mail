@@ -22,6 +22,7 @@ export interface Video {
     title: string;
     summary_json: VideoSummary;
     published_at: string;
+    thumbnail_url?: string;
     created_at: string;
 }
 
