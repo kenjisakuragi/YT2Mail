@@ -1,10 +1,13 @@
 
-import { getLatestVideos } from '@/lib/youtube/service';
-import { getVideoTranscript } from '@/lib/youtube/transcript';
-import { summarizeVideo } from '@/lib/gemini/service';
-import { sendEmail } from '@/lib/email/service';
-import { supabaseAdmin } from '@/lib/supabase/admin';
-import { VideoSummary } from '@/lib/types';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
+import { getLatestVideos } from '../lib/youtube/service';
+import { getVideoTranscript } from '../lib/youtube/transcript';
+import { summarizeVideo } from '../lib/gemini/service';
+import { sendEmail } from '../lib/email/service';
+import { supabaseAdmin } from '../lib/supabase/admin';
+import { VideoSummary } from '../lib/types';
 
 async function main() {
     console.log('Starting Daily Digest Pipeline...');
@@ -14,6 +17,7 @@ async function main() {
     }
 
     // 1. Get new videos
+    // Note: getLatestVideos uses hardcoded process.env.YOUTUBE_API_KEY
     const videos = await getLatestVideos();
     console.log(`Found ${videos.length} videos from the last 24h.`);
 
@@ -22,10 +26,24 @@ async function main() {
         return;
     }
 
+    // Fetch users ONCE
+    // Select users where subscription_status is active/trialing OR is_admin is true
+    const { data: users, error: userError } = await supabaseAdmin
+        .from('users')
+        .select('id, email, is_admin, subscription_status')
+        .or('subscription_status.in.(active,trialing),is_admin.eq.true');
+
+    if (userError || !users) {
+        console.error('Failed to fetch users:', userError);
+        return;
+    }
+    console.log(`Target users count: ${users.length}`);
+
     for (const videoItem of videos) {
         const videoId = videoItem.id?.videoId;
         const title = videoItem.snippet?.title;
         const publishedAt = videoItem.snippet?.publishedAt;
+        const thumbnailUrl = videoItem.snippet?.thumbnails?.maxres?.url || videoItem.snippet?.thumbnails?.high?.url || videoItem.snippet?.thumbnails?.medium?.url;
 
         if (!videoId || !title) continue;
 
@@ -43,26 +61,26 @@ async function main() {
             continue;
         }
 
-        // 2. Fetch Transcript
+        // 2. Fetch Transcript / Summary
+        // Ideally we should reuse the logic from import-all-videos.ts (audio fallback)
+        // For now, let's stick to text transcript to keep it simple, assuming daily new videos have captions.
+        // If not, we might need to unify the "ingestVideo" logic into a shared library function.
+
         let transcript = '';
+        let summary: VideoSummary | undefined;
+
         try {
             transcript = await getVideoTranscript(videoId);
+            if (transcript && transcript.length > 100) {
+                summary = await summarizeVideo(transcript);
+            }
         } catch (e) {
-            console.error(`Could not fetch transcript for ${videoId}. Skipping.`);
-            continue;
+            console.error(`Error processing content for ${videoId}`, e);
         }
 
-        if (!transcript) {
-            console.log('No transcript found. Skipping.');
-            continue;
-        }
-
-        // 3. Summarize
-        let summary: VideoSummary;
-        try {
-            summary = await summarizeVideo(transcript);
-        } catch (e) {
-            console.error(`Could not summarize ${videoId}. Skipping.`);
+        if (!summary) {
+            console.log('Could not generate summary (no transcript?). Skipping.');
+            // Note: In production you'd want the audio fallback here too!
             continue;
         }
 
@@ -72,8 +90,10 @@ async function main() {
             .insert({
                 yt_video_id: videoId,
                 title: title,
-                summary_json: summary, // Supabase handles JSONB
+                summary_json: summary,
                 published_at: publishedAt,
+                thumbnail_url: thumbnailUrl,
+                transcript: transcript
             })
             .select()
             .single();
@@ -85,25 +105,15 @@ async function main() {
 
         console.log(`Video saved: ${videoRecord.id}`);
 
-        // 5. Deliver to Users (Active/Trialing)
-        const { data: users, error: userError } = await supabaseAdmin
-            .from('users')
-            .select('id, email')
-            .in('subscription_status', ['active', 'trialing']);
-
-        if (userError || !users) {
-            console.error('Failed to fetch users:', userError);
-            return;
-        }
-
+        // 5. Deliver to Users
         console.log(`Sending emails to ${users.length} users...`);
 
         for (const user of users) {
             if (!user.email) continue;
 
-            // Construct Email Config
             const emailHtml = `
         <h1>${title}</h1>
+        <img src="${thumbnailUrl}" style="width:100%;max-width:600px;border-radius:8px;margin-bottom:20px;" />
         <h2>ビジネス概要</h2>
         <p>${summary.business_overview}</p>
         <h2>主要メトリクス</h2>
@@ -115,7 +125,7 @@ async function main() {
         <h2>日本での応用案</h2>
         <p>${summary.japan_application}</p>
         <hr/>
-        <p><a href="https://youtube.com/watch?v=${videoId}">Watch Video</a></p>
+        <p><a href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard">ダッシュボードで読む</a> | <a href="https://youtube.com/watch?v=${videoId}">YouTubeで見る</a></p>
       `;
 
             try {

@@ -5,6 +5,7 @@ export interface User {
     stripe_customer_id?: string;
     subscription_status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'unpaid';
     trial_end_date?: string; // timestamp
+    is_admin?: boolean;
     created_at: string;
 }
 

@@ -21,7 +21,7 @@ export default async function DashboardPage() {
         .eq('id', user.id)
         .single();
 
-    const isSubscribed = userData?.subscription_status === 'active' || userData?.subscription_status === 'trialing';
+    const isSubscribed = userData?.subscription_status === 'active' || userData?.subscription_status === 'trialing' || userData?.is_admin;
 
     // Fetch Videos (If isSubscribed, show full content? Or just show list?)
     // Requirement: "Trialing users can verify full content".
