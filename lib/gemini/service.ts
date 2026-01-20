@@ -51,7 +51,7 @@ export async function processVideoAudio(audioPath: string, mimeType: string = 'a
     // For large files, polling might be needed.
 
     // 2. Generate Content
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     console.log('[Gemini] Analyzing audio...');
     const result = await model.generateContent([
