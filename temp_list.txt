@@ -1,0 +1,38 @@
+﻿[dotenv@17.2.3] injecting env (9) from .env.local -- tip: 柏 prevent committing .env to code: https://dotenvx.com/precommit
+=== YouTube Channels ===
+
+Total Channels: 3
+
+笨・Active Rob Walling
+  ID: UCHoBKQDRkJcOY2BO47q5Ruw
+  Category: saas
+  Subscribers: 114,000
+  Last Checked: 2026/1/20 22:20:27
+  URL: https://www.youtube.com/channel/UCHoBKQDRkJcOY2BO47q5Ruw
+
+笨・Active Side Hustle Nation
+  ID: UCzOAAJUiSO2uyu1xyxw__2Q
+  Category: side_hustle
+  Subscribers: 44,400
+  Last Checked: 2026/1/20 22:20:05
+  URL: https://www.youtube.com/channel/UCzOAAJUiSO2uyu1xyxw__2Q
+
+笨・Active My First Million
+  ID: UCyaN6mg5u8Cjy2ZI4ikWaug
+  Category: business
+  Subscribers: 864,000
+  Last Checked: 2026/1/20 22:20:16
+  URL: https://www.youtube.com/channel/UCyaN6mg5u8Cjy2ZI4ikWaug
+
+=== Video Counts ===
+
+Rob Walling: 5 videos
+Side Hustle Nation: 5 videos
+My First Million: 4 videos
+
+=== Commands ===
+Import videos from a channel:
+  npx tsx scripts/import-channel-videos.ts <channel_id> [max_videos]
+
+Add new channel:
+  npx tsx scripts/add-channel.ts <channel_url> [category]
