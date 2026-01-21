@@ -1,10 +1,12 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Wrench, Globe } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Wrench, Globe, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { SubscribePrompt } from '@/components/SubscribePrompt';
 
 export default async function VideoDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -18,7 +20,7 @@ export default async function VideoDetailPage(props: { params: Promise<{ id: str
 
     const { data: userData } = await supabase
         .from('users')
-        .select('subscription_status, is_admin')
+        .select('subscription_status, is_admin, email')
         .eq('id', user.id)
         .single();
 
@@ -40,11 +42,16 @@ export default async function VideoDetailPage(props: { params: Promise<{ id: str
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             {/* Header */}
             <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center">
+                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
                     <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 group">
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                         <span className="font-medium">一覧に戻る</span>
                     </Link>
+                    {!isSubscribed && (
+                        <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100 flex items-center gap-1.5 shadow-sm">
+                            <Lock size={12} /> PREMIUM TRIAL
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -92,78 +99,107 @@ export default async function VideoDetailPage(props: { params: Promise<{ id: str
                             </div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-green-900">主要メトリクス</h3>
                         </div>
-                        <p className="text-gray-800 font-medium leading-relaxed">{summary.key_metrics}</p>
+                        <p className="text-gray-800 font-medium leading-relaxed">
+                            {isSubscribed ? summary.key_metrics : 'プレミアムメンバー限定'}
+                        </p>
                     </div>
                 </div>
 
-                {/* Detailed Article Content */}
-                <article className="
-                    mb-16 bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100
-                    prose prose-lg max-w-none
-                    prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
-                    prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:first:mt-0
-                    prose-h2:text-2xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:pb-3 prose-h2:border-b-2 prose-h2:border-gray-200
-                    prose-h3:text-xl prose-h3:mb-4 prose-h3:mt-8
-                    prose-p:text-gray-700 prose-p:leading-loose prose-p:mb-6 prose-p:text-[17px]
-                    prose-ul:my-6 prose-ul:space-y-3 prose-ul:pl-6
-                    prose-ol:my-6 prose-ol:space-y-3 prose-ol:pl-6
-                    prose-li:text-gray-700 prose-li:leading-relaxed prose-li:marker:text-blue-500
-                    prose-strong:text-gray-900 prose-strong:font-semibold
-                    prose-em:text-gray-600 prose-em:italic
-                    prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline hover:prose-a:text-blue-700
-                    prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-blue-50 prose-blockquote:py-4 prose-blockquote:rounded-r-lg
-                    prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-pink-600 prose-code:font-mono
-                    prose-pre:bg-gray-900 prose-pre:text-gray-100
-                ">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {summary.detailed_article || "詳細記事は準備中です。"}
-                    </ReactMarkdown>
-                </article>
-
-                {/* Additional Insights */}
-                <div className="space-y-6">
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <TrendingUp size={20} className="text-purple-600" />
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900">獲得戦略</h3>
-                        </div>
-                        <div className="prose prose-lg max-w-none prose-p:text-gray-700 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-gray-700">
+                {isSubscribed ? (
+                    <>
+                        {/* Detailed Article Content */}
+                        <article className="
+                            mb-16 bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100
+                            prose prose-lg max-w-none
+                            prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
+                            prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:first:mt-0
+                            prose-h2:text-2xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:pb-3 prose-h2:border-b-2 prose-h2:border-gray-200
+                            prose-h3:text-xl prose-h3:mb-4 prose-h3:mt-8
+                            prose-p:text-gray-700 prose-p:leading-loose prose-p:mb-6 prose-p:text-[17px]
+                            prose-ul:my-6 prose-ul:space-y-3 prose-ul:pl-6
+                            prose-ol:my-6 prose-ol:space-y-3 prose-ol:pl-6
+                            prose-li:text-gray-700 prose-li:leading-relaxed prose-li:marker:text-blue-500
+                            prose-strong:text-gray-900 prose-strong:font-semibold
+                            prose-em:text-gray-600 prose-em:italic
+                            prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline hover:prose-a:text-blue-700
+                            prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-blue-50 prose-blockquote:py-4 prose-blockquote:rounded-r-lg
+                            prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-pink-600 prose-code:font-mono
+                            prose-pre:bg-gray-900 prose-pre:text-gray-100
+                        ">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {summary.acquisition_strategy}
+                                {summary.detailed_article || "詳細記事は準備中です。"}
                             </ReactMarkdown>
-                        </div>
-                    </div>
+                        </article>
 
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                                <Wrench size={20} className="text-orange-600" />
+                        {/* Additional Insights */}
+                        <div className="space-y-6">
+                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                                        <TrendingUp size={20} className="text-purple-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900">獲得戦略</h3>
+                                </div>
+                                <div className="prose prose-lg max-w-none prose-p:text-gray-700 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-gray-700">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {summary.acquisition_strategy}
+                                    </ReactMarkdown>
+                                </div>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900">使用ツール</h3>
-                        </div>
-                        <div className="prose prose-lg max-w-none prose-p:text-gray-700 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-gray-700">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {summary.tools_used}
-                            </ReactMarkdown>
-                        </div>
-                    </div>
 
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-8 rounded-2xl shadow-lg text-white">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                <Globe size={20} className="text-white" />
+                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                                        <Wrench size={20} className="text-orange-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900">使用ツール</h3>
+                                </div>
+                                <div className="prose prose-lg max-w-none prose-p:text-gray-700 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-gray-700">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {summary.tools_used}
+                                    </ReactMarkdown>
+                                </div>
                             </div>
-                            <h3 className="text-2xl font-bold">日本市場での応用アイデア</h3>
+
+                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-8 rounded-2xl shadow-lg text-white">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                        <Globe size={20} className="text-white" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold">日本市場での応用アイデア</h3>
+                                </div>
+                                <div className="prose prose-lg max-w-none prose-p:text-blue-50 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-white prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-blue-50">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {summary.japan_application}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
                         </div>
-                        <div className="prose prose-lg max-w-none prose-p:text-blue-50 prose-p:leading-loose prose-p:text-[17px] prose-strong:text-white prose-strong:font-semibold prose-ul:space-y-2 prose-li:text-blue-50">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {summary.japan_application}
-                            </ReactMarkdown>
+                    </>
+                ) : (
+                    <div className="mt-8 space-y-12">
+                        {/* Blur placeholder for detailed article */}
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-10"></div>
+                            <div className="opacity-20 select-none pointer-events-none filter blur-sm space-y-4">
+                                <div className="h-6 w-3/4 bg-gray-200 rounded"></div>
+                                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                                <div className="h-4 w-5/6 bg-gray-100 rounded"></div>
+                                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                                <div className="h-4 w-2/3 bg-gray-100 rounded"></div>
+                                <div className="h-6 w-1/2 bg-gray-200 rounded pt-8"></div>
+                                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                            </div>
                         </div>
+
+                        <SubscribePrompt
+                            email={userData?.email || user.email!}
+                            userId={user.id}
+                        />
                     </div>
-                </div>
+                )}
 
                 {/* Footer Action */}
                 <div className="mt-16 pt-10 border-t border-gray-200 text-center">
