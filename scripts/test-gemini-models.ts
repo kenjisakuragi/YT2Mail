@@ -12,7 +12,7 @@ async function test() {
     // Let's just try generate with Flash.
 
     console.log('Comparing models...');
-    const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    const models = ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash'];
 
     for (const modelName of models) {
         console.log(`\nTesting ${modelName}...`);

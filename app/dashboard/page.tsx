@@ -41,6 +41,9 @@ export default async function DashboardPage() {
                     <span className="text-sm text-gray-500">
                         {userData?.email}
                     </span>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href="/settings">マイページ</Link>
+                    </Button>
                     <form action={async () => {
                         'use server';
                         const supabase = await createClient();
@@ -93,7 +96,14 @@ export default async function DashboardPage() {
                                     await createPortalSession(userData.stripe_customer_id);
                                 }
                             }}>
-                                <Button variant="outline" size="sm">お支払い情報の管理</Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!userData?.stripe_customer_id}
+                                    title={!userData?.stripe_customer_id ? 'Stripe顧客IDが見つかりません' : 'お支払い情報を管理'}
+                                >
+                                    お支払い情報の管理
+                                </Button>
                             </form>
                         </div>
 
@@ -133,10 +143,29 @@ export default async function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardContent>
-                                    <CardFooter className="border-t pt-4 bg-gray-50/50">
-                                        <Button className="w-full" asChild>
+                                    <CardFooter className="border-t pt-4 bg-gray-50/50 flex gap-3">
+                                        <Button className="flex-1" asChild>
+                                            <Link href={`/dashboard/videos/${video.id}`}>
+                                                レポートを読む
+                                            </Link>
+                                        </Button>
+                                        <Button variant="outline" size="icon" asChild title="YouTubeで動画を見る">
                                             <a href={`https://youtube.com/watch?v=${video.yt_video_id}`} target="_blank" rel="noopener noreferrer">
-                                                動画を見る
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="20"
+                                                    height="20"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="text-red-600"
+                                                >
+                                                    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                                                    <path d="m10 15 5-3-5-3z" />
+                                                </svg>
                                             </a>
                                         </Button>
                                     </CardFooter>

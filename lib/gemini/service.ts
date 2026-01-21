@@ -27,7 +27,8 @@ Return a JSON object with this exact structure:
     "key_metrics": "月商、利益率、初期費用（判明している場合）。",
     "acquisition_strategy": "最初の10〜100人のお客様をどう獲得したか。",
     "tools_used": "Shopify, Beehiiv, No-codeツール等のスタック。",
-    "japan_application": "この事例を日本市場で展開するための具体的なヒント。"
+    "japan_application": "この事例を日本市場で展開するための具体的なヒント。",
+    "detailed_article": "読者が没入して読める、10分程度（3000〜4000文字程度）のブログ記事形式の長文。起承転結または具体的なストーリーテリングを用いて、創業者の苦労、転機、成功の秘訣を詳細に描写すること。"
   }
 }
 `;
@@ -51,7 +52,8 @@ export async function processVideoAudio(audioPath: string, mimeType: string = 'a
     // For large files, polling might be needed.
 
     // 2. Generate Content
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    // Using 'gemini-2.0-flash-lite' for better free tier quota (gemini-1.5-* models are deprecated)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
     console.log('[Gemini] Analyzing audio...');
     const result = await model.generateContent([
@@ -80,7 +82,7 @@ export async function summarizeVideo(transcript: string): Promise<VideoSummary> 
     if (!process.env.GEMINI_API_KEY) {
         throw new Error('GEMINI_API_KEY is missing');
     }
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
     // Simple prompt for text-only
     const prompt = `

@@ -2,15 +2,23 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-import { getLatestVideos } from '../lib/youtube/service';
-import { getVideoTranscript } from '../lib/youtube/transcript';
-import { summarizeVideo } from '../lib/gemini/service';
-import { sendEmail } from '../lib/email/service';
-import { supabaseAdmin } from '../lib/supabase/admin';
+// Remove static imports to allow dotenv to load first
+// import { getLatestVideos } from '../lib/youtube/service';
+// import { getVideoTranscript } from '../lib/youtube/transcript';
+// import { summarizeVideo } from '../lib/gemini/service';
+// import { sendEmail } from '../lib/email/service';
+// import { supabaseAdmin } from '../lib/supabase/admin';
 import { VideoSummary } from '../lib/types';
 
 async function main() {
     console.log('Starting Daily Digest Pipeline...');
+
+    // Dynamically import AFTER dotenv config
+    const { getLatestVideos } = await import('../lib/youtube/service');
+    const { getVideoTranscript } = await import('../lib/youtube/transcript');
+    const { summarizeVideo } = await import('../lib/gemini/service');
+    const { sendEmail } = await import('../lib/email/service');
+    const { supabaseAdmin } = await import('../lib/supabase/admin');
 
     if (!supabaseAdmin) {
         throw new Error('Supabase Admin client not initialized');

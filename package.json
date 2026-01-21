@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "digest": "npx tsx scripts/daily-digest.ts",
+    "import-all": "npx tsx scripts/import-all-videos.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -17,11 +19,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
+    "embla-carousel-react": "^8.6.0",
     "googleapis": "^170.1.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.8.0",
     "stripe": "^20.2.0",
     "tailwind-merge": "^3.4.0",

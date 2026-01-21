@@ -6,6 +6,9 @@ export interface User {
     subscription_status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'unpaid';
     trial_end_date?: string; // timestamp
     is_admin?: boolean;
+    email_frequency?: 'daily' | 'three_per_week' | 'weekly' | 'off';
+    email_time?: string; // HH:MM format
+    interested_categories?: string[]; // ['saas', 'ecommerce', 'app', 'content']
     created_at: string;
 }
 
@@ -15,6 +18,7 @@ export interface VideoSummary {
     acquisition_strategy: string;
     tools_used: string;
     japan_application: string;
+    detailed_article?: string; // New field for long-form content (10 min read)
 }
 
 export interface Video {

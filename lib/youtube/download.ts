@@ -22,15 +22,26 @@ export async function downloadAudio(videoId: string): Promise<string> {
     console.log(`[Download] Downloading audio (m4a) for ${videoId}...`);
 
     try {
-        await youtubedl(videoUrl, {
+        const args: any = {
             // "bestaudio[ext=m4a]" ensures we get m4a container (usually AAC) which doesn't need ffmpeg to extract if it's a separate stream.
             // Note: sometimes yt-dlp still wants ffmpeg to "fix" the container. 
             // We use 'format' option.
-            format: 'bestaudio[ext=m4a]/bestaudio',
+            // "bestaudio" is safer. If m4a isn't available, we take what we get and handle it.
+            // Some shorts or videos only have certain formats exposed to Android client.
+            format: 'bestaudio[ext=m4a]/bestaudio/best',
             output: path.join(outputDir, '%(id)s.%(ext)s'), // let yt-dlp determine extension if m4a fails
             noWarnings: true,
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        });
+            // Impersonate Android Client: This is the critical "Fundamental" fix.
+            // The Android API is generally much more permissive and less likely to trigger "Sign in"
+            extractorArgs: 'youtube:player_client=android',
+            userAgent: 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+        };
+
+        if (process.env.YOUTUBE_COOKIES_PATH) {
+            args.cookies = process.env.YOUTUBE_COOKIES_PATH;
+        }
+
+        await youtubedl(videoUrl, args);
 
         // Find the file because extension might vary if fallback happened
         const files = fs.readdirSync(outputDir);

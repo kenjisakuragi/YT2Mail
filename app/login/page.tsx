@@ -36,6 +36,28 @@ export default function LoginPage() {
         setLoading(false)
     }
 
+    const [passwordEmail, setPasswordEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    const handlePasswordLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setMessage('')
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email: passwordEmail,
+            password: password,
+        })
+
+        if (error) {
+            setMessage(error.message)
+            setLoading(false)
+        } else {
+            router.push('/dashboard')
+            router.refresh()
+        }
+    }
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <Card className="w-full max-w-md">
@@ -55,7 +77,37 @@ export default function LoginPage() {
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Magic Link'}
                         </Button>
                     </form>
-                    {message && <p className="mt-4 text-center text-sm text-gray-600">{message}</p>}
+
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">Or sign in with password</span>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handlePasswordLogin} className="space-y-4">
+                        <Input
+                            type="email"
+                            placeholder="Email"
+                            value={passwordEmail}
+                            onChange={(e) => setPasswordEmail(e.target.value)}
+                            required
+                        />
+                        <Input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <Button type="submit" variant="outline" className="w-full" disabled={loading}>
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign in with Password'}
+                        </Button>
+                    </form>
+
+                    {message && <p className="mt-4 text-center text-sm text-red-600">{message}</p>}
                 </CardContent>
             </Card>
         </div>
